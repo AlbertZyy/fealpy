@@ -26,7 +26,7 @@ is_bd_face = mesh.ds.boundary_face_flag()
 space = ScaledMonomialSpace2d(mesh, p=P)
 
 gamma = P * (P+1)
-fm = np.sqrt(mesh.entity_measure('face'))
+fm = mesh.entity_measure('face')
 
 bform = BilinearForm(space)
 bform.add_domain_integrator(ScalarDiffusionIntegrator(q=Q))
@@ -49,8 +49,8 @@ uh[:] = spsolve(A, F)
 
 from matplotlib import pyplot as plt
 
-err = mesh.error(pde.solution, lambda x, index: uh(x, index))
-gerr = mesh.error(pde.gradient, lambda x, index: uh.grad_value(x, index))
+err = mesh.error(pde.solution, lambda x, index: uh(x, index), q=Q)
+gerr = mesh.error(pde.gradient, lambda x, index: uh.grad_value(x, index), q=Q)
 
 print(err, gerr)
 
