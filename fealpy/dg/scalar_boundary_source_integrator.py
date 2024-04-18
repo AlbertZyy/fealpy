@@ -10,7 +10,10 @@ ScaledMonomialSpace = ScaledMonomialSpace2d
 
 
 class ScalerBoundarySourceIntegrator():
-    r"""Scalar boundary source integrator."""
+    r"""Scalar boundary source integrator for scaled monomial space.
+
+        $$(v, g)_{\partial\Omega}$$
+    """
     def __init__(self, source, c: Optional[float]=None, q: Optional[int]=None) -> None:
         self.source = source
         self.coef = c

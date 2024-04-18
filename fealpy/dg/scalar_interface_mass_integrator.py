@@ -12,7 +12,7 @@ ScaledMonomialSpace = ScaledMonomialSpace2d
 
 
 class ScalerInterfaceMassIntegrator():
-    r"""Scalar interface mass integrator."""
+    r"""Scalar interface mass integrator for scaled monomial space."""
     def __init__(self, c: Union[NDArray, float, None]=None, q: Optional[int]=None) -> None:
         self.q = q
         self.coef = c

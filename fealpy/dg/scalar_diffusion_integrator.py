@@ -10,7 +10,7 @@ ScaledMonomialSpace = ScaledMonomialSpace2d
 
 
 class ScalarDiffusionIntegrator():
-    r"""Scalar diffusion integrator
+    r"""Scalar diffusion integrator for scaled monomial space.
 
         $$(\nabla v, \nabla u)_\Omega$$
     """

@@ -17,10 +17,10 @@ from fealpy.fem import BilinearForm, LinearForm
 from scipy.sparse.linalg import spsolve
 
 P = 1
-Q = P + 2
+Q = P + 3
 
 pde = CosCosData()
-mesh_tri = TriangleMesh.from_box(box=pde.domain(), nx=64, ny=64)
+mesh_tri = TriangleMesh.from_box(box=pde.domain(), nx=16, ny=16)
 mesh = PolygonMesh.from_mesh(mesh_tri)
 is_bd_face = mesh.ds.boundary_face_flag()
 space = ScaledMonomialSpace2d(mesh, p=P)
@@ -49,20 +49,25 @@ uh[:] = spsolve(A, F)
 
 from matplotlib import pyplot as plt
 
-err = mesh.error(pde.solution, lambda x, index: uh(x, index), q=Q)
-gerr = mesh.error(pde.gradient, lambda x, index: uh.grad_value(x, index), q=Q)
+err = mesh.error(pde.solution, lambda x, index: space.value(uh, x, index), celltype=True)
+gerr = mesh.error(pde.gradient, lambda x, index: space.grad_value(uh, x, index), celltype=True)
 
-print(err, gerr)
+# print(err, gerr)
 
 from matplotlib import pyplot as plt
 
-fig = plt.figure()
-axes = fig.add_subplot(1, 1, 1, projection='3d')
-cell = mesh_tri.entity('cell')
-dof = mesh_tri.entity('node', index=cell).reshape(-1, 2)
-dof_to_cell = np.arange(cell.shape[0]).repeat(cell.shape[1])
-cax = axes.plot_trisurf(
-        dof[:, 0], dof[:, 1],
-        uh(dof, index=dof_to_cell), triangles=space.cell_to_dof(), cmap='rainbow', lw=0.1)
+fig = plt.figure(figsize=(12, 6))
+# axes = fig.add_subplot(121, projection='3d')
+# cell = mesh_tri.entity('cell')
+# dof = mesh_tri.entity('node', index=cell).reshape(-1, 2)
+# dof_to_cell = np.arange(cell.shape[0]).repeat(cell.shape[1])
+# cax = axes.plot_trisurf(
+#         dof[:, 0], dof[:, 1],
+#         uh(dof, index=dof_to_cell), triangles=space.cell_to_dof(), cmap='rainbow', lw=0.1)
+
+axes = fig.add_subplot(121)
+poly = mesh.add_plot(axes, cellcolor=err, colorbar=True, linewidths=0.1)
+axes = fig.add_subplot(122)
+poly = mesh.add_plot(axes, cellcolor=gerr, colorbar=True, linewidths=0.1)
 
 plt.show()
