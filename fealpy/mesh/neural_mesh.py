@@ -24,8 +24,12 @@ class NeuralMesh2D:
         assert bias.ndim == 1
         assert weight.shape[0] == bias.shape[0]
         assert weight.shape[1] == 2
+        assert weight.dtype == bias.dtype
         self.weight = weight
         self.bias = bias
+        self.ftype = weight.dtype
+        self.itype = bm.int32
+        self.device = weight.device
 
     def geo_dimension(self) -> int:
         return 2
@@ -45,7 +49,9 @@ class NeuralMesh2D:
     def point_to_bc(self, points: TensorLike, index: Index = _S) -> TensorLike:
         weight = self.weight[index, :]
         bias = self.bias[index]
-        L0 = bm.einsum("cd, qd -> cq", weight, points) + bias[:, None]
+        ndim = points.ndim - 1
+        indices = [None] * (ndim-1) + [slice(None)]
+        L0 = bm.einsum("fd, ...d -> ...f", weight, points) + bias[*indices]
         return L0
 
     def shape_function(
@@ -56,7 +62,7 @@ class NeuralMesh2D:
         index: Index = _S
     ) -> TensorLike:
         if p == 1:
-            return bcs[:, None] # (..., ldof)
+            return bcs
         else:
             raise NotImplementedError
 
@@ -78,3 +84,6 @@ class NeuralMesh2D:
                                  f"but got '{variables}'.")
         else:
             raise NotImplementedError
+
+    def grad_lambda(self, index: Index = _S) -> TensorLike:
+        return self.weight[index, :]

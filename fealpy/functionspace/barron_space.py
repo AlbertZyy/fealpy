@@ -87,13 +87,22 @@ class BarronSpace(FunctionSpace, Generic[_MT]):
     face_basis = basis
 
     def grad_basis(self, bc: TensorLike, index: Index=_S, variable='x'):
-        return self.mesh.grad_shape_function(bc, self.p, index=index, variables=variable)
+        gphi = self.mesh.grad_shape_function(bc, self.p, index=index, variables=variable) # (dof, GD)
+        phi = self.mesh.shape_function(bc, 1, index=index) # (..., dof)
+        dsigma = bm.greater_equal(phi, bm.zeros_like(phi))
+
+        if variable == 'u':
+            return dsigma * gphi
+        elif variable == 'x':
+            return bm.einsum("...f, fd -> ...fd", dsigma, gphi)
+        else:
+            raise ValueError(f"variable must be 'u' or 'x', but got {variable}")
 
     def hess_basis(self, bc: TensorLike, index: Index=_S, variable='x'):
         return self.mesh.hess_shape_function(bc, self.p, index=index, variables=variable)
 
     @barycentric
-    def value(self, uh: TensorLike, bc: TensorLike, index: Index=_S) -> TensorLike: 
+    def value(self, uh: TensorLike, bc: TensorLike, index: Index=_S) -> TensorLike:
         phi = self.basis(bc, index=index)
         e2dof = self.cell_to_dof(index=index)
         val = bm.einsum('cql, ...cl -> ...cq', phi, uh[..., e2dof])
